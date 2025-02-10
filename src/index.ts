@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { Message } from './types/message';
+import { Log, Message } from './types/message';
 import { User } from './types/room';
 import * as uuid from 'uuid';
 
@@ -27,9 +27,27 @@ wss.on('connection', (socket: WebSocket) => {
                 existingUser = true;
               }
             });
-            if (!existingUser) room.push(user);
+            if (!existingUser) {
+              room.push(user);
+              const successLog: Log = {
+                type: 'log',
+                payload: {
+                  title: 'success',
+                  description: 'Room joined successfully',
+                },
+              };
+              socket.send(JSON.stringify(successLog));
+            }
           } else {
             rooms.set(message.payload.room, [user]);
+            const successLog: Log = {
+              type: 'log',
+              payload: {
+                title: 'success',
+                description: 'Room created successfully',
+              },
+            };
+            socket.send(JSON.stringify(successLog));
           }
         }
 
@@ -52,10 +70,35 @@ wss.on('connection', (socket: WebSocket) => {
             if (newRoom.length) rooms.set(message.payload.room, newRoom);
             else rooms.delete(message.payload.room);
           }
+          const successLog: Log = {
+            type: 'log',
+            payload: {
+              title: 'success',
+              description: 'Room exitted successfully',
+            },
+          };
+          socket.send(JSON.stringify(successLog));
         }
+      } else {
+        const errorLog: Log = {
+          type: 'log',
+          payload: {
+            title: 'error',
+            description: 'Invalid room ID',
+          },
+        };
+        socket.send(JSON.stringify(errorLog));
       }
-    } catch (error) {}
-    console.log(rooms);
+    } catch (error) {
+      const errorLog: Log = {
+        type: 'log',
+        payload: {
+          title: 'error',
+          description: 'Invalid JSON',
+        },
+      };
+      socket.send(JSON.stringify(errorLog));
+    }
   });
 
   // If client disconnects

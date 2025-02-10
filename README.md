@@ -44,3 +44,17 @@ Sent by: `client`
   }
 }
 ```
+
+## Log Messages
+
+Sent by: `server`
+
+```json
+{
+  "type": "log",
+  "payload": {
+    "title": "title", // error || success || info || warn
+    "description": "description"
+  }
+}
+```
